@@ -1,0 +1,59 @@
+---
+- name: 0.系统初始化
+  gather_facts: no
+  hosts: 
+    - k8s
+  roles:
+    - common
+  tags: common
+
+
+- name: 1.生成TLS证书
+  gather_facts: no
+  hosts: localhost
+  roles:
+    - tls
+  tags: tls
+
+- name: 2.部署ETCD
+  gather_facts: no
+  hosts: etcd
+  roles:
+    - etcd
+  tags: etcd
+
+- name: 3.部署Docker
+  gather_facts: no
+  hosts: k8s
+  roles:
+    - docker
+  tags: docker
+
+
+- name: 4.部署master
+  gather_facts: no
+  hosts: master
+  roles:
+    - master
+  tags: master
+
+- name: 5.部署node
+  gather_facts: no
+  hosts: node
+  roles:
+    - node
+  tags: node
+
+- name: 6.批准node加入集群
+  gather_facts: no
+  hosts: master
+  roles:
+    - approve
+  tags: approve
+
+- name: 7. 部署插件
+  gather_facts: no
+  hosts: master
+  roles:
+    - addons
+  tags: addons

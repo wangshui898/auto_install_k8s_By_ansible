@@ -1,0 +1,19 @@
+# 生成etcd证书
+---
+- name: 生成etcd证书请求文件
+  template:
+    src=etcd/{{ item }}
+    dest={{ ansible_dir.stdout }}/ssl/etcd/{{ item.split('.')[:-1]|join('.') }}
+  loop:
+    - ca-config.json.j2
+    - ca-csr.json.j2
+    - server-csr.json.j2
+
+- name: 部署etcd生成证书脚本
+  copy:
+    src=generate_etcd_cert.sh
+    dest={{ ansible_dir.stdout }}/ssl/etcd
+    mode=u+x
+
+- name: 生成etcd证书并拷贝到master,etcd模块对应files目录下
+  shell: cd {{ ansible_dir.stdout }}/ssl/etcd && /bin/bash generate_etcd_cert.sh

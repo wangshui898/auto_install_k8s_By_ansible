@@ -1,0 +1,44 @@
+---
+- name: 拷贝YAML文件
+  template: src={{ item }} dest={{ k8s_dir }}/yaml/{{ item.split('.')[:-1]|join('.') }}
+  with_items:
+    - kube-flannel.yaml.j2
+    - coredns.yaml.j2
+    - dashboard.yaml.j2
+    - ingress.yaml.j2
+
+- name: 部署Flannel,Dashboard,CoreDNS,Ingress
+  shell: |
+    cd {{ k8s_dir }}/yaml
+    for yaml in $(ls -1 *.yaml); do kubectl apply -f $yaml; done
+
+- name: 获取POD状态
+  ignore_errors: yes
+  shell: sleep 5; kubectl get pod --all-namespaces
+  register: podstatus
+
+- name: POD状态
+  debug:
+    msg={{ podstatus.stdout_lines }}
+
+- name: 获取node节点状态
+  ignore_errors: yes
+  tags: approve
+  shell: sleep 10; kubectl get node
+  register: status
+
+- name: 看node节点状态
+  debug: msg={{ status.stdout_lines }}
+  tags: approve
+
+- name: 获取Dashboard管理员令牌
+  ignore_errors: yes
+  shell: |
+         web='https://NodeIP:30001'
+         token=$(kubectl describe secrets -n kubernetes-dashboard dashboard-admin|grep 'token:'|awk '{print $NF}')
+         echo "访问地址--->$web"
+         echo "令牌内容--->$token" 
+  register: ui
+
+- name: Kubernetes Dashboard登录信息
+  debug: msg={{ ui.stdout_lines }}

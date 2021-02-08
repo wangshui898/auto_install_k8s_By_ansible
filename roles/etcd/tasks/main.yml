@@ -1,0 +1,60 @@
+---
+- name: 创建etcd目录
+  file:
+    dest={{ etcd_dir }}/{{ item }}
+    state=directory
+  loop:
+    - bin
+    - cfg
+    - ssl
+
+- name: 创建临时目录
+  file:
+    dest={{ k8s_src_dir }}/{{ item }}
+    state=directory
+  with_items:
+    - tmp
+
+- name: 解压分发{{ etcd_version }}
+  unarchive:
+    src={{ item }}
+    dest={{ k8s_src_dir }}/tmp
+  with_fileglob:
+    - "{{ k8s_src_dir }}/etcd-v*.tar.gz"
+  
+- name: 移动etcd可执行文件到对应bin目录
+  shell: mv {{ k8s_src_dir }}/tmp/etcd-v*/{etcd,etcdctl} {{ etcd_dir }}/bin/
+
+- name: 分发etcd证书
+  copy:
+    src=etcd_cert/{{ item }}
+    dest={{ etcd_dir }}/ssl
+  loop:
+    - ca.pem
+    - server.pem
+    - server-key.pem
+
+- name: 分发etcd配置文件
+  template:
+    src=etcd.conf.j2
+    dest={{ etcd_dir }}/cfg/etcd.conf
+
+- name: 分发etcd启动文件
+  template:
+    src=etcd.service.j2
+    dest=/usr/lib/systemd/system/etcd.service
+
+- name: 分发etcd健康检测脚本
+  template: src=etcd-status.sh.j2 dest={{ etcd_dir }}/bin/etcd-status.sh mode=u+x
+
+- name: 启动etcd
+  systemd: name=etcd state=restarted enabled=yes daemon_reload=yes
+
+- name: 集群状态检测
+  shell: /bin/bash {{ etcd_dir }}/bin/etcd-status.sh
+  register: status
+  tags: etcd_status
+
+- name: etcd集群状态
+  debug: msg={{ status.stderr_lines }}
+  tags: etcd_status

@@ -1,0 +1,26 @@
+---
+- name: 获取NODE节点请求csr列表
+  tags: approve
+  shell: kubectl get csr|awk 'NR!=1 {print $1 "   " $NF}'
+  register: request
+  ignore_errors: yes
+
+- name: NODE节点请求csr列表
+  debug: msg={{ request.stdout_lines }}
+  tags: approve
+
+- name: 批准NODE节点csr请求
+  tags: approve
+  shell: sleep 5 && kubectl certificate approve $(kubectl get csr |awk 'NR!=1{print $1}') 
+  when: request.rc == 0
+  ignore_errors: yes
+
+- name: 获取NODE批准请求csr列表
+  tags: approve
+  shell: kubectl get csr|awk 'NR!=1 {print $1 "   " $NF}'|grep Approved
+  register: approve
+  ignore_errors: yes
+
+- name: NODE节点批准csr列表
+  debug: msg={{ approve.stdout_lines }}
+  tags: approve

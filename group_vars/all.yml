@@ -1,0 +1,60 @@
+# 软件版本
+kubenetes_version: 'kubernetes-server-linux-amd64.tar'
+docker_version: 'docker-19.03.15.tgz'
+etcd_version: 'etcd-v3.4.13-linux-amd64.tar.gz'
+nginx_version: ''
+
+
+# 安装目录
+k8s_src_dir: '/usr/local/src/k8s'
+docker_dir: '/opt/docker'
+etcd_dir: '/opt/etcd'
+k8s_dir: '/opt/k8s'
+
+# 集群DNS配置
+DNS1: '192.168.2.1'
+DNS2: '223.5.5.5'
+
+# docker配置
+registry_mirrors: 'https://gsm39obv.mirror.aliyuncs.com'
+insecure_registries: '192.168.2.10:85'
+
+# 容器认证
+# token生成方法: head -c 16 /dev/urandom | od -An -t x | tr -d ' '
+token: 'e7681e6e584f80c52751b25e506fa5f0'
+
+# 容器网络
+service_cidr: '10.0.0.0/24'
+cluster_dns: '10.0.0.2'
+pod_cidr: '10.244.0.0/16'    # 与CNI网络插件配置的网络地址一致
+service_nodeport_range: '30000-32767'
+cluster_domain: 'cluster.local'
+
+
+
+# 高可用配置
+vip: '192.168.2.100'
+nic: 'ens33'    # keeplived心跳检测网卡名称
+
+
+
+# 自签证书可信任IP地址列表, 为方便扩展, 可添加多个预留IP
+cert_hosts:
+  k8s:
+    # 包含所有LB, VIP, Node IP和Master IP
+    - 192.168.2.61
+    - 192.168.2.62
+    - 192.168.2.71
+    - 192.168.2.72
+    - 192.168.2.73
+    - 192.168.2.74
+    - 192.168.2.75
+    - 192.168.2.101
+    - 192.168.2.102
+    - 192.168.2.100
+  etcd:
+    - 192.168.2.71
+    - 192.168.2.72
+    - 192.168.2.73
+    - 192.168.2.74
+    - 192.168.2.75

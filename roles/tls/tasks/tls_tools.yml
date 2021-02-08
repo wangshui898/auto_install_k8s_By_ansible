@@ -1,0 +1,20 @@
+# 部署cfssl工具
+---
+- name: 获取Ansible主目录
+  shell: pwd |sed 's:roles/tls::' 
+  register: ansible_dir 
+
+- name: 创建k8s,etcd证书目录
+  file: 
+    dest={{ ansible_dir.stdout }}/ssl/{{ item }}
+    state=directory
+  loop:
+    - k8s
+    - etcd
+
+
+- name: 部署cfssl工具
+  unarchive:
+    src={{ k8s_src_dir }}/cfssl.tar.gz
+    dest=/usr/bin/
+    mode=u+x

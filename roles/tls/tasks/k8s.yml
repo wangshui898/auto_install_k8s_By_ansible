@@ -1,0 +1,21 @@
+# 生成k8s证书
+---
+- name: 生成k8s证书请求文件
+  template:
+    src=k8s/{{ item }}
+    dest={{ ansible_dir.stdout }}/ssl/k8s/{{ item.split('.')[:-1]|join('.') }}
+  loop:
+    - ca-config.json.j2
+    - ca-csr.json.j2
+    - server-csr.json.j2
+    - admin-csr.json.j2
+    - kube-proxy-csr.json.j2
+
+- name: 部署k8s生成证书脚本
+  copy:
+    src=generate_k8s_cert.sh
+    dest={{ ansible_dir.stdout }}/ssl/k8s
+    mode=u+x
+
+- name: 生成k8s证书并拷贝到master,node模块对应files目录下
+  shell: cd {{ ansible_dir.stdout }}/ssl/k8s && /bin/bash generate_k8s_cert.sh

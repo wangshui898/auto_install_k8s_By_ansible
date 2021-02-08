@@ -1,0 +1,43 @@
+---
+- name: 创建临时解压目录
+  file:
+    dest={{ k8s_src_dir }}/tmp
+    state=directory
+
+- name: 解压分发{{ docker_version }}
+  unarchive:
+    src={{ item }}
+    dest={{ k8s_src_dir }}/tmp
+    mode=0775
+    owner=root
+    group=root
+  with_items:
+    - "{{ k8s_src_dir }}/{{ docker_version }}"
+ 
+- name: 移动docker可执行文件到对应bin目录
+  shell: mv {{ k8s_src_dir }}/tmp/docker/* /usr/bin/
+
+- name: 创建docker配置目录
+  file:
+    dest=/etc/docker
+    state=directory
+
+- name: 分发docker配置文件
+  template:
+    src=daemon.json.j2
+    dest=/etc/docker/daemon.json
+
+- name: 分发docker启动文件
+  template:
+    src=docker.service.j2
+    dest=/usr/lib/systemd/system/docker.service
+
+- name: 启动docker
+  systemd: name=docker state=restarted enabled=yes daemon_reload=yes
+
+- name: docker启动状态检测
+  shell: docker info
+  register: status
+
+- name: docker状态
+  debug: msg={{ status.stdout_lines }}

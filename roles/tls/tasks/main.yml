@@ -1,0 +1,4 @@
+---
+- include: tls_tools.yml    # 部署cfssl工具
+- include: etcd.yml         # 生成etcd证书
+- include: k8s.yml          # 生成k8s证书
