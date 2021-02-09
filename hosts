@@ -19,6 +19,3 @@
 [k8s:children]
 master
 node
-
-[addnode]
-192.168.2.79 host_name=k8s-node3 ansible_ssh_user=root ansible_ssh_port=22 ansible_ssh_pass=......
