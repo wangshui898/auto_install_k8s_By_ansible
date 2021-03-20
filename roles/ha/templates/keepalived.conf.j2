@@ -1,8 +1,8 @@
 {% if lb_name == "LB-M" %}
-{%    set role = "LB-MASTER" %}
+{%    set role = "MASTER" %}
 {%    set priority = 100 %}
 {% elif lb_name == "LB-S" %}
-{%    set role = "LB-SLAVE" %}
+{%    set role = "BACKUP" %}
 {%    set priority = 90 %}
 {% endif %}
 global_defs { 
